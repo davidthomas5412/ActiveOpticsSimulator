@@ -1,0 +1,22 @@
+language: python
+
+python:
+  - 3.5
+
+branches:
+  only:
+    - master
+
+install:
+  - pip install -r requirements.txt
+  - travis_wait 30 pip install -U -r test_requirements.txt
+  - pip install matplotlib 
+  - pip install pytest codecov coveralls coverage
+  - pip list
+
+script:
+    # - python setup.py install
+    - cd tests
+
+after_success:
+    - codecov

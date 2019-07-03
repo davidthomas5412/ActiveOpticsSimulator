@@ -1,3 +1,6 @@
+# Where I keep my entry point while developing.
+main.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
