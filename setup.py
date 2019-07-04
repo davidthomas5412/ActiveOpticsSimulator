@@ -7,4 +7,5 @@ setup(
     author_email='davidthomas5412@gmail.com',
     url='https://github.com/davidthomas5412/ActiveOpticsSimulator',
     description="A Simulator for LSST Active Optics System",
+    packages = ['aos']
 )
