@@ -12,7 +12,7 @@ install:
   #- travis_wait 30 pip install -U -r test_requirements.txt
   - pip install -r test_requirements.txt
   # - pip install matplotlib 
-  # - pip install pytest codecov coveralls coverage
+  - python setup.py install
   - pip list
 
 script:
