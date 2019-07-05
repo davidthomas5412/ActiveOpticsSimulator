@@ -1,3 +1,5 @@
+import os
+import aos
 import numpy as np
 from aos.telescope import Telescope
 from aos.simulator import OPDSimulator
@@ -12,6 +14,6 @@ def test_opd_simulator():
     opd = sim.simulate(tel.optic, fieldx, fieldy)
     array = np.array(opd.array)
 
-    ref = np.load('nominal_opd_0_0.npy')
+    ref = np.load(os.path.join(aos.testDir, 'nominal_opd_0_0.npy'))
 
     np.testing.assert_allclose(array, ref)

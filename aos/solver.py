@@ -1,5 +1,6 @@
+import os
+import aos
 import numpy as np
-from aos.state import OpticalState
 from abc import ABC, abstractmethod
 
 
@@ -46,9 +47,9 @@ class SensitivitySolver(Solver):
     def __init__(self, field=(0,0)):
         if not (field[0] == 0  and field[1] == 0):
             raise NotImplementedError()
-        self.A = np.load('../data/sensitivity_matrix_20dof.npy')
+        self.A = np.load(os.path.join(aos.dataDir, 'sensitivity_matrix_20dof.npy'))
         self.Ainv = np.linalg.pinv(self.A, rcond=1e-4)
-        self.y0 = np.load('../data/nominal_wavefront_20dof.npy')
+        self.y0 = np.load(os.path.join(aos.dataDir, 'nominal_wavefront_20dof.npy'))
 
     def solve(self, y):
         """

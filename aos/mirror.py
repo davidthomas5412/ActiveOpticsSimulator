@@ -1,3 +1,5 @@
+import os
+import aos
 import numpy as np
 
 
@@ -68,9 +70,9 @@ class M1M3Residual(SurfaceResidual):
     """
     def __init__(self, modes=None, forces=None, nModes=None):
         super().__init__()
-        self.x = np.load('../data/M1M3_grid_x.npy')
-        self.y = np.load('../data/M1M3_grid_y.npy')
-        self.bendingMatrix = np.load('../data/M1M3_bending_modes.npy')
+        self.x = np.load(os.path.join(aos.dataDir, 'M1M3_grid_x.npy'))
+        self.y = np.load(os.path.join(aos.dataDir, 'M1M3_grid_y.npy'))
+        self.bendingMatrix = np.load(os.path.join(aos.dataDir, 'M1M3_bending_modes.npy'))
         if nModes is None:
             self.nModes = self.bendingMatrix.shape[0]
         else:
@@ -122,9 +124,9 @@ class M2Residual(SurfaceResidual):
     """
     def __init__(self, modes=None, forces=None, nModes=None):
         super().__init__()
-        self.x = np.load('../data/M2_grid_x.npy')
-        self.y = np.load('../data/M2_grid_y.npy')
-        self.bendingMatrix = np.load('../data/M2_bending_modes.npy')
+        self.x = np.load(os.path.join(aos.dataDir, 'M2_grid_x.npy'))
+        self.y = np.load(os.path.join(aos.dataDir, 'M2_grid_y.npy'))
+        self.bendingMatrix = np.load(os.path.join(aos.dataDir, 'M2_bending_modes.npy'))
         if nModes is None:
             self.nModes = self.bendingMatrix.shape[0]
         else:
