@@ -1,4 +1,5 @@
 from aos.catalog import Catalog
 
-def test_trivial():
-	assert 0 != 1
+
+def test_catalog():
+    cat = Catalog()
