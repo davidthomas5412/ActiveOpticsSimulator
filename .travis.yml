@@ -30,6 +30,7 @@ install:
 script:
     - echo $PWD
     - pytest --cov=aos --cov-report=xml --cov-config tests/.coveragerc tests
+    - cat coverage.xml
 
 after_success:
   - codecov -t 1e8eae0c-e424-43cb-9bc8-fb87d698fffa
