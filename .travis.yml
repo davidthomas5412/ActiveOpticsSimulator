@@ -14,10 +14,11 @@ before_install:
   - sudo apt-get install -y libeigen3-dev
   - pip install pybind11
   - pip install galsim
+  - cd ..
   - git clone --recurse-submodules https://github.com/jmeyers314/batoid.git
   - cd batoid
   - python setup.py install
-  - cd ..
+  - cd ../ActiveOpticsSimulator
   - pip install -r requirements.txt
   - pip install -r test_requirements.txt
   - pip list
@@ -28,7 +29,7 @@ install:
 
 script:
     - echo $PWD
-    - pytest --cov=aos --cov-report=xml --cov-config tests/.coveragerc
+    - pytest --cov=aos --cov-report=xml --cov-config tests/.coveragerc tests
 
 after_success:
   - codecov
