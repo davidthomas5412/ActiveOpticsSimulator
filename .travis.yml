@@ -14,7 +14,7 @@ before_install:
   - sudo apt-get install -y libeigen3-dev
   - pip install pybind11
   - pip install galsim
-  - git clone https://github.com/jmeyers314/batoid.git
+  - git clone --recurse-submodules https://github.com/jmeyers314/batoid.git
   - cd batoid
   - python setup.py install
   - cd ..
