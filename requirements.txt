@@ -1,6 +1,5 @@
 numpy
 scipy
-eigency
-pybind11
+pyyaml
 batoid
 galsim

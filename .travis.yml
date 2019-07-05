@@ -7,9 +7,14 @@ branches:
   only:
     - master
 
-install:
+before install:
+  - export EIGEN_DIR=$PWD/eigen/
+  - sudo apt-get install -y libfftw3-dev
   - pip install -r requirements.txt
   - pip install -r test_requirements.txt
+  - pip list
+
+install:
   - python setup.py install
   - pip list
 
