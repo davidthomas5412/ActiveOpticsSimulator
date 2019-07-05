@@ -13,6 +13,10 @@ before_install:
   - sudo apt-get install -y libeigen3-dev
   - pip install pybind11
   - pip install galsim
+  - git clone https://github.com/jmeyers314/batoid.git
+  - cd batoid
+  - python setup.py install
+  - cd ..
   - pip install -r requirements.txt
   - pip install -r test_requirements.txt
   - pip list
