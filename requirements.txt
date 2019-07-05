@@ -1,5 +1,6 @@
 numpy
 scipy
 pyyaml
-batoid
+pybind11
 galsim
+batoid
