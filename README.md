@@ -45,10 +45,18 @@ And then run the tests using setup.py:
 python setup.py test
 ```
 
-# Getting Started
+# Getting Started with our Minimum Viable Product
+We started off with a minimal viable product (MVP) that supports the following workflow:
+1) create nominal telescope
+2) create perturbed optical state and apply it to telescope
+3) simulate OPD at the field center
+4) estimate wavefront at field center from OPD image
+5) use wavefront estimate to solve for optical correction by minimizing 
+metric
+6) apply new optical state to telescope
+7) repeat
 
 The snippet below runs two iterations of this primitive version of the active optics system:
-
 ```
 from aos.simulator import OPDSimulator
 from aos.estimator import OPDEstimator
