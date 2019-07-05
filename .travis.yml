@@ -24,7 +24,7 @@ before_install:
   - pip list
 
 install:
-  - python setup.py install
+  - python setup.py develop
   - pip list
 
 script:
