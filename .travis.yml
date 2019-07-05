@@ -11,6 +11,8 @@ before_install:
   - export EIGEN_DIR=$PWD/eigen/
   - sudo apt-get install -y libfftw3-dev
   - sudo apt-get install -y libeigen3-dev
+  - pip install pybind11
+  - pip install galsim
   - pip install -r requirements.txt
   - pip install -r test_requirements.txt
   - pip list
