@@ -4,8 +4,7 @@
 # ActiveOpticsSimulator
 A framework for simulating and researching the LSST Active Optics system. We hope to 
 document and transfer much
- of the functionality in [bxin/IM](https://github.com/bxin/IM) (latest fork: [davidthomas5412/IM]
-(https://github.com/davidthomas5412/IM)) and [bxin/cwfs](https://github.com/bxin/cwfs)(latest fork: 
+ of the functionality in [bxin/IM](https://github.com/bxin/IM) (latest fork: [davidthomas5412/IM](https://github.com/davidthomas5412/IM)) and [bxin/cwfs](https://github.com/bxin/cwfs)(latest fork: 
 [davidthomas5412/cwfs](https://github.com/davidthomas5412/cwfs)) into this new framework, as well
  as make it easy to explore alternative approaches. We will also be introducing the following 
  software practices:
