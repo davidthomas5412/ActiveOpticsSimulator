@@ -45,3 +45,44 @@ And then run the tests using setup.py:
 ```
 python setup.py test
 ```
+
+# Getting Started
+
+The snippet below runs two iterations of this primitive version of the active optics system:
+
+```
+from aos.simulator import OPDSimulator
+from aos.estimator import OPDEstimator
+from aos.metric import SumOfSquares
+from aos.control import GainController
+from aos.telescope import Telescope
+from aos.state import OpticalState
+from aos.solver import SensitivitySolver
+
+telescope = Telescope.nominal(band='g')
+simulator = OPDSimulator()
+estimator = OPDEstimator()
+solver = SensitivitySolver()
+metric = SumOfSquares()
+controller = GainController(metric, gain=0.3)
+fieldx, fieldy = 0, 0
+
+x = OpticalState()
+# add 1 micron of the third bending mode to M2.
+x['m2b3'] = 1e-6
+telescope.update(x)
+opd = simulator.simulate(telescope.optic, fieldx, fieldy)
+yest = estimator.estimate(opd)
+xest = solver.solve(yest)
+xprime, xdelta = controller.nextState(xest)
+
+# start second iteration
+telescope.update(xdelta)
+opd = simulator.simulate(telescope.optic, fieldx, fieldy)
+yest = estimator.estimate(opd)
+xest = solver.solve(yest)
+xprime, xdelta = controller.nextState(xest)
+```
+
+There are a lot of degeneracies in the optical system at the field center, so the convergence is 
+not great ... yet. 
