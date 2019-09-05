@@ -40,11 +40,11 @@ class OPDSimulator:
         Parameters
         ----------
         optic: batoid.optic.CompoundOptic
-            The LSST optical system to simulate.
+            The optical system to simulate.
         fieldx: float
-            The 'x' field angle in degrees.
+            The x field position in radians.
         fieldy: float
-            The 'y' field angle in degrees.
+            The y field position in radians.
 
         Returns
         -------
@@ -125,14 +125,14 @@ class DonutSimulator:
         self.nphot = nphot
         self.pix = pix
 
-    def simulate(self, telescope, fieldx, fieldy):
+    def simulate(self, optic, fieldx, fieldy):
         """
-        Simulate a donut image by raytracing photons through telescope.
+        Simulate a donut image by raytracing photons through optic.
 
         Parameters
         ----------
-        telescope: batoid.Optic
-            The telescope to raytrace through.
+        optic: batoid.Optic
+            The optic to raytrace through.
         fieldx: float
             The x field position in radians.
         theta_y: float
@@ -146,13 +146,13 @@ class DonutSimulator:
         flux = 1
         xcos, ycos, zcos = batoid.utils.gnomonicToDirCos(fieldx, fieldy)
         rays = batoid.uniformCircularGrid(
-            telescope.dist,
-            telescope.pupilSize / 2,
-            telescope.pupilSize * telescope.pupilObscuration / 2,
+            optic.dist,
+            optic.pupilSize / 2,
+            optic.pupilSize * optic.pupilObscuration / 2,
             xcos, ycos, -zcos,
             self.nphot, self.wavelength, flux,
-            telescope.inMedium)
-        telescope.traceInPlace(rays)
+            optic.inMedium)
+        optic.traceInPlace(rays)
         rays.trimVignettedInPlace()
 
         xcent, ycent = np.mean(rays.x), np.mean(rays.y)
