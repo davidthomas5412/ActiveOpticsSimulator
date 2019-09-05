@@ -85,6 +85,89 @@ class OPDSimulator:
         return batoid.Lattice(arr, primitiveVectors)
 
 
+class DonutSimulator:
+    """
+    Simulates individual donut crops.
+
+    Parameters
+    ----------
+    wavelength: float
+        The wavelength of light to use.
+    crop: int
+        The number of pixels in donut crop.
+    nphot: int
+        The number of photons to use per donut.
+    pix: float
+        The size of a pixel in meters.
+
+    Attributes
+    ----------
+    wavelength: float
+        The wavelength of light to use.
+    crop: int
+        The number of pixels in donut crop.
+    nphot: int
+        The number of photons to use per donut.
+    pix: float
+        The size of a pixel in meters.
+
+    Raises
+    ------
+    ValueError
+        crop must be an even integer.
+    """
+    def __init__(self, wavelength=500e-9, crop=192, nphot=int(1e6), pix=10e-6):
+        if crop % 2 == 1:
+            raise ValueError('crop must be even integer.')
+
+        self.wavelength = wavelength
+        self.crop = crop
+        self.nphot = nphot
+        self.pix = pix
+
+    def simulate(self, telescope, fieldx, fieldy):
+        """
+        Simulate a donut image by raytracing photons through telescope.
+
+        Parameters
+        ----------
+        telescope: batoid.Optic
+            The telescope to raytrace through.
+        fieldx: float
+            The x field position in radians.
+        theta_y: float
+            The y field position in radians.
+
+        Returns
+        -------
+        batoid.Lattice
+            The donut image.
+        """
+        flux = 1
+        xcos, ycos, zcos = batoid.utils.gnomonicToDirCos(fieldx, fieldy)
+        rays = batoid.uniformCircularGrid(
+            telescope.dist,
+            telescope.pupilSize / 2,
+            telescope.pupilSize * telescope.pupilObscuration / 2,
+            xcos, ycos, -zcos,
+            self.nphot, self.wavelength, flux,
+            telescope.inMedium)
+        telescope.traceInPlace(rays)
+        rays.trimVignettedInPlace()
+
+        xcent, ycent = np.mean(rays.x), np.mean(rays.y)
+        width = self.crop * self.pix
+
+        xedges = np.arange(xcent - width / 2, xcent + width / 2, self.pix)
+        yedges = np.arange(ycent - width / 2, ycent + width / 2, self.pix)
+
+        # flip here because 1st dimension corresponds to y-dimension in bitmap image
+        result, _, _ = np.histogram2d(rays.y, rays.x, bins=[yedges, xedges])
+
+        primitiveX = np.array([[self.pix, 0], [0, self.pix]])
+        return batoid.Lattice(result, primitiveX)
+
+
 class StarSimulator:
     """
     Simulator for realistic LSST images.
