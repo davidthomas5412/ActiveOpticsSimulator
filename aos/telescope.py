@@ -84,7 +84,7 @@ class Telescope:
         self.optic.itemDict['LSST.M2'].surface = batoid.Sum([m2nominal, m2bicubic])
 
     @staticmethod
-    def nominal(band='g'):
+    def nominal(band='g', nModes=5):
         """
         Provides the nominal LSST telescope.
 
@@ -92,6 +92,8 @@ class Telescope:
         ----------
         band: str
             The LSST filter; default is 'g'.
+        nModes: int
+            Number of mirror bending modes; default is 5.
 
         Returns
         -------
@@ -101,6 +103,6 @@ class Telescope:
         LSST_g_fn = os.path.join(batoid.datadir, "LSST", "LSST_{}.yaml".format(band))
         config = yaml.safe_load(open(LSST_g_fn))
         optic = batoid.parse.parse_optic(config['opticalSystem'])
-        m1m3res = M1M3Residual(nModes=5)
-        m2res = M2Residual(nModes=5)
+        m1m3res = M1M3Residual(nModes=nModes)
+        m2res = M2Residual(nModes=nModes)
         return Telescope(optic, m1m3res, m2res)
