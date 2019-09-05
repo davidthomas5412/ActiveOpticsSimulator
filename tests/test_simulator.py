@@ -16,7 +16,7 @@ def test_opd_simulator():
 
     ref = np.load(os.path.join(aos.testDir, 'nominal_opd_0_0.npy'))
 
-    np.testing.assert_allclose(array, ref)
+    np.testing.assert_allclose(array, ref, rtol=1e-3)
 
 
 def test_donut_simulator():
@@ -30,4 +30,4 @@ def test_donut_simulator():
 
     ref = np.load(os.path.join(aos.testDir, 'nominal_donut_0_0.npy'))
 
-    np.testing.assert_allclose(array, ref)
+    np.testing.assert_allclose(array, ref, rtol=1e-3)
