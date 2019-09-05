@@ -85,7 +85,7 @@ class M1M3Residual(SurfaceResidual):
         self.surfResidual = np.zeros((nx, ny))
 
         if modes is not None:
-            self.setBending(modes)
+            self.applyBending(modes)
 
         if forces is not None:
             self.applyForce(forces)
@@ -138,7 +138,7 @@ class M2Residual(SurfaceResidual):
         self.surfResidual = np.zeros((nx, ny))
 
         if modes is not None:
-            self.setBending(modes)
+            self.applyBending(modes)
 
         if forces is not None:
             self.applyForce(forces)
