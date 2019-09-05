@@ -6,7 +6,6 @@ from aos.simulator import DonutSimulator, OPDSimulator
 
 
 def test_opd_simulator():
-    np.random.seed(0)
     tel = Telescope.nominal()
     sim = OPDSimulator()
     fieldx = 0
@@ -20,7 +19,6 @@ def test_opd_simulator():
 
 
 def test_donut_simulator():
-    np.random.seed(0)
     tel = Telescope.nominal()
     optic = tel.optic
     optic = optic.withGloballyShiftedOptic('LSST.LSSTCamera.Detector', [0, 0, -1.5e-3])
@@ -32,4 +30,7 @@ def test_donut_simulator():
 
     ref = np.load(os.path.join(aos.testDir, 'nominal_donut_0_0.npy'))
 
-    np.testing.assert_allclose(array, ref)
+    err = np.sum(np.abs(array - ref))
+    poisson_err = np.sum(np.sqrt(ref))
+
+    assert err < 2 * poisson_err
