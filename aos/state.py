@@ -1,9 +1,9 @@
 import numpy as np
 
 
-class OpticalState(dict):
+class BendingState(dict):
     """
-    The optical degrees of freedom.
+    The telescope degrees of freedom, with surfaces represented via bending modes.
 
     Notes
     -----
@@ -76,3 +76,66 @@ class OpticalState(dict):
     @property
     def m2modes(self):
         return self.state[15:]
+
+
+class ZernikeState(dict):
+    """
+    The telescope degrees of freedom, with surfaces represented via zernike coefficients.
+
+    Notes
+    -----
+    Client can set optical state with the following syntax `state['camx'] = 1`.
+    All degrees of freedom are in meters or radians depending on whether distance or angle.
+
+    Parameters
+    ----------
+    state: numpy.ndarray
+        A 1D array with the 20 degrees of freedom.
+
+    Attributes
+    ----------
+    state: numpy.ndarray
+        A 1D array with the 20 degrees of freedom.
+    stateMap: dict(str, int)
+        A dictionary mapping the name of the degree of freedom to its index in the state array.
+    camhex: numpy.ndarray
+        1D array with the 5 camera hexapod degrees of freedom.
+    m2z: numpy.ndarray
+        1D array with the 18 M2 zernike coefficients (Z4-Z21).
+    """
+    def __init__(self, state=None):
+        self.state = np.zeros(31) if state is None else state
+        self.stateMap = {
+            'camx': 0,
+            'camy': 1,
+            'camz': 2,
+            'camrx': 3,
+            'camry': 4,
+            'm2x': 5,
+            'm2y': 6,
+            'm2z': 7,
+            'm2rx': 8,
+            'm2ry': 9,
+        }
+        for i in range(21):
+            self.stateMap['m2z{}'.format(i)] = i + 10
+
+    def __getitem__(self, key):
+        ind = self.stateMap[key]
+        return self.state[ind]
+
+    def __setitem__(self, key, val):
+        ind = self.stateMap[key]
+        self.state[ind] = val
+
+    @property
+    def camhex(self):
+        return self.state[:5]
+
+    @property
+    def m2hex(self):
+        return self.state[5:10]
+
+    @property
+    def m2z(self):
+        return self.state[10:]

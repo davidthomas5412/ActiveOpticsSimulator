@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from aos.mirror import SurfaceResidual, M1M3Residual, M2Residual
+from aos.mirror import M1M3Residual, M2Residual
 
 
 def test_nmodes():

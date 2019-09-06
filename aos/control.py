@@ -1,5 +1,5 @@
 from scipy.optimize import minimize
-from aos.state import OpticalState
+from aos.state import BendingState
 from abc import ABC, abstractmethod
 
 
@@ -58,7 +58,7 @@ class GainController:
         numpy.ndarray, numpy.ndarray
             The next state and corresponding update.
         """
-        xprime = OpticalState().state
+        xprime = BendingState().state
         res = minimize(self.metric.evaluate, xprime)
         xdelta = (res.x - x) * self.gain
         xprime = x + xdelta
