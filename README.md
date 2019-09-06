@@ -53,7 +53,7 @@ from aos.estimator import OPDEstimator
 from aos.metric import SumOfSquares
 from aos.control import GainController
 from aos.telescope import Telescope
-from aos.state import OpticalState
+from aos.state import BendingState
 from aos.solver import SensitivitySolver
 
 telescope = Telescope.nominal(band='g')
@@ -64,7 +64,8 @@ metric = SumOfSquares()
 controller = GainController(metric, gain=0.3)
 fieldx, fieldy = 0, 0
 
-x = OpticalState()
+
+x = BendingState()
 # add 1 micron of the third bending mode to M2.
 x['m2b3'] = 1e-6
 telescope.update(x)
