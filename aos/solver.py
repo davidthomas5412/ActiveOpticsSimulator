@@ -2,6 +2,7 @@ import os
 import aos
 import numpy as np
 from abc import ABC, abstractmethod
+from aos.state import BendingState
 
 
 class Solver(ABC):
@@ -20,7 +21,7 @@ class Solver(ABC):
 
         Returns
         -------
-        numpy.ndarray
+        aos.state.State
             The optical state that produces wavefront y.
         """
         pass
@@ -59,15 +60,18 @@ class SensitivitySolver(Solver):
         -----
         Math: x = psuedoInverse(A) (y-y0)
 
+        The coefficients are indexed by the Noll (1976) convention, which starts at j=1. The 0th
+        coefficient has no impact.
+
         Parameters
         ----------
         y: numpy.ndarray
-            The wavefront
+            The wavefront in annular zernike polynomial coefficients.
 
         Returns
         -------
-        numpy.ndarray
+        aos.state.BendingState
             The optical state that produces wavefront y.
         """
-        xest = np.dot(self.Ainv, (y - self.y0))
+        xest = BendingState(np.dot(self.Ainv, (y[1:] - self.y0)))
         return xest
