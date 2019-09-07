@@ -3,29 +3,29 @@ from aos.state import BendingState, ZernikeState
 
 
 def test_bending_state_dictionary():
-    arr = np.arange(20)
+    arr = np.arange(BendingState.LENGTH)
     state = BendingState(arr)
 
     assert state['camx'] == arr[0]
 
     state['m2b3'] = 1e-6
 
-    assert state.state[17] == state['m2b3']
+    assert state.array[17] == state['m2b3']
 
 
 def test_zernike_state_dictionary():
-    arr = np.arange(31)
+    arr = np.arange(ZernikeState.LENGTH)
     state = ZernikeState(arr)
 
     assert state['m2rx'] == arr[8]
 
     state['m2z17'] = 1e-6
 
-    assert state.state[27] == state['m2z17']
+    assert state.array[27] == state['m2z17']
 
 
 def test_bending_state_properties():
-    arr = np.arange(20)
+    arr = np.arange(BendingState.LENGTH)
     state = BendingState(arr)
 
     np.testing.assert_allclose(state.camhex, arr[:5])
@@ -35,7 +35,7 @@ def test_bending_state_properties():
 
 
 def test_zernike_state_properties():
-    arr = np.arange(31)
+    arr = np.arange(ZernikeState.LENGTH)
     state = ZernikeState(arr)
 
     np.testing.assert_allclose(state.camhex, arr[:5])

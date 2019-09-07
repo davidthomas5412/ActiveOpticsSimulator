@@ -39,8 +39,8 @@ python setup.py test
 We started off with a minimal viable product (MVP) that supports the following workflow:
 1) create nominal telescope
 2) create perturbed optical state and apply it to telescope
-3) simulate OPD at the field center
-4) estimate wavefront at field center from OPD image
+3) simulate wavefront at the field center
+4) estimate wavefront at field center from wavefront image
 5) use wavefront estimate to solve for optical correction by minimizing 
 metric
 6) apply new optical state to telescope
@@ -48,17 +48,17 @@ metric
 
 The snippet below runs two iterations of this primitive version of the active optics system:
 ```
-from aos.simulator import OPDSimulator
-from aos.estimator import OPDEstimator
+from aos.simulator import WavefrontSimulator
+from aos.estimator import WavefrontEstimator
 from aos.metric import SumOfSquares
 from aos.control import GainController
-from aos.telescope import Telescope
+from aos.telescope import BendingTelescope
 from aos.state import BendingState
 from aos.solver import SensitivitySolver
 
-telescope = Telescope.nominal(band='g')
-simulator = OPDSimulator()
-estimator = OPDEstimator()
+telescope = BendingTelescope.nominal(band='g')
+simulator = WavefrontSimulator()
+estimator = WavefrontEstimator()
 solver = SensitivitySolver()
 metric = SumOfSquares()
 controller = GainController(metric, gain=0.3)
@@ -69,15 +69,15 @@ x = BendingState()
 # add 1 micron of the third bending mode to M2.
 x['m2b3'] = 1e-6
 telescope.update(x)
-opd = simulator.simulate(telescope.optic, fieldx, fieldy)
-yest = estimator.estimate(opd)
+wavefront = simulator.simulateWavefront(telescope.optic, fieldx, fieldy)
+yest = estimator.estimate(wavefront)
 xest = solver.solve(yest)
 xprime, xdelta = controller.nextState(xest)
 
 # start second iteration
 telescope.update(xdelta)
-opd = simulator.simulate(telescope.optic, fieldx, fieldy)
-yest = estimator.estimate(opd)
+wavefront = simulator.simulateWavefront(telescope.optic, fieldx, fieldy)
+yest = estimator.estimate(wavefront)
 xest = solver.solve(yest)
 xprime, xdelta = controller.nextState(xest)
 ```

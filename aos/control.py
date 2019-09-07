@@ -1,3 +1,4 @@
+import numpy as np
 from scipy.optimize import minimize
 from aos.state import BendingState
 from abc import ABC, abstractmethod
@@ -12,18 +13,18 @@ class Controller(ABC):
         """
         Parameters
         ----------
-        x: numpy.ndarray
+        x: aos.state.State
             Optical state.
 
         Returns
         -------
-        numpy.ndarray, numpy.ndarray
+        aos.state.State, aos.state.State
             The next state and corresponding update.
         """
         pass
 
 
-class GainController:
+class GainController(Controller):
     """
     A controller that computes the next state by optimizing a metric and multiplying the
     optimal update by a gain.
@@ -50,16 +51,16 @@ class GainController:
         """
         Parameters
         ----------
-        x: numpy.ndarray
+        x: aos.state.State
             Optical state.
 
         Returns
         -------
-        numpy.ndarray, numpy.ndarray
+        aos.state.BendingState, aos.state.BendingState
             The next state and corresponding update.
         """
-        xprime = BendingState().state
+        xprime = np.zeros(BendingState.LENGTH)
         res = minimize(self.metric.evaluate, xprime)
-        xdelta = (res.x - x) * self.gain
-        xprime = x + xdelta
+        xdelta = BendingState((res.x - x.array) * self.gain)
+        xprime = BendingState(x.array + xdelta.array)
         return xprime, xdelta

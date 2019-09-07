@@ -3,9 +3,9 @@ import numpy as np
 from batoid.utils import fieldToDirCos
 
 
-class OPDSimulator:
+class WavefrontSimulator:
     """
-    Simulates opd (optical path difference) images.
+    Simulates wavefront images using optical path differences.
 
     Notes
     -----
@@ -25,13 +25,20 @@ class OPDSimulator:
     wavelength: float
         The wavelength of light to use.
     nx: int
-        The grid size to use (grid = nx x nx pixels/rays).
+        The grid size to use (grid = nx x nx pixels/rays). Must be odd.
+
+    Raises
+    ------
+    ValueError
+        Raise if nx is even; nx must be odd.
     """
     def __init__(self, wavelength=500e-9, nx=255):
-        self.wavelength=wavelength
-        self.nx=nx
+        if nx % 2 == 0:
+            raise ValueError('nx must be odd.')
+        self.wavelength = wavelength
+        self.nx = nx
 
-    def simulate(self, optic, fieldx, fieldy):
+    def simulateWavefront(self, optic, fieldx, fieldy):
         """
         Notes
         -----
@@ -42,23 +49,22 @@ class OPDSimulator:
         optic: batoid.optic.CompoundOptic
             The optical system to simulate.
         fieldx: float
-            The x field position in radians.
+            The x field position in degrees.
         fieldy: float
-            The y field position in radians.
+            The y field position in degrees.
 
         Returns
         -------
-        batoid.Lattice
+        numpy.ndarray
             The grid of relative path difference values.
         """
-        theta_x, theta_y = np.deg2rad([fieldx, fieldy])
-        dirCos = fieldToDirCos(theta_x, theta_y, projection='zemax')
-        useLattice = (self.nx % 2 ==0)
+        thetax, thetay = np.deg2rad([fieldx, fieldy])
+        dirCos = fieldToDirCos(thetax, thetay, projection='zemax')
         rays = batoid.rayGrid(
             optic.dist / dirCos[2], optic.pupilSize,
             dirCos[0], dirCos[1], -dirCos[2],
             self.nx, self.wavelength, 1.0, optic.inMedium,
-            lattice=useLattice
+            lattice=False
         )
 
         # chief ray index.  works if lattice=True and nx is even,
@@ -77,12 +83,10 @@ class OPDSimulator:
         sphere = batoid.Sphere(-radius)
         sphere.intersectInPlace(rays)
         t0 = rays[cridx].t
-        arr = np.ma.masked_array((t0 - rays.t), mask=rays.vignetted)\
-            .reshape(self.nx, self.nx)
-
-        primitiveVectors = np.vstack([[optic.pupilSize / self.nx, 0],
-                                      [0, optic.pupilSize / self.nx]])
-        return batoid.Lattice(arr, primitiveVectors)
+        wf = t0 - rays.t
+        wf[rays.vignetted] = np.nan
+        wf = wf.reshape(self.nx, self.nx)
+        return wf
 
 
 class DonutSimulator:
@@ -125,7 +129,7 @@ class DonutSimulator:
         self.nphot = nphot
         self.pix = pix
 
-    def simulate(self, optic, fieldx, fieldy):
+    def simulateDonut(self, optic, fieldx, fieldy):
         """
         Simulate a donut image by raytracing photons through optic.
 
@@ -134,17 +138,18 @@ class DonutSimulator:
         optic: batoid.Optic
             The optic to raytrace through.
         fieldx: float
-            The x field position in radians.
+            The x field position in degrees.
         theta_y: float
-            The y field position in radians.
+            The y field position in degrees.
 
         Returns
         -------
         batoid.Lattice
             The donut image.
         """
+        thetax, thetay = np.deg2rad([fieldx, fieldy])
         flux = 1
-        xcos, ycos, zcos = batoid.utils.gnomonicToDirCos(fieldx, fieldy)
+        xcos, ycos, zcos = batoid.utils.gnomonicToDirCos(thetax, thetay)
         rays = batoid.uniformCircularGrid(
             optic.dist,
             optic.pupilSize / 2,

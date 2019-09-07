@@ -41,38 +41,8 @@ class Telescope:
         return self.optic.withGloballyShiftedOptic('LSST.LSSTCamera.Detector',
                                                    [0, 0, Telescope.OFFSET])
 
-
-class ZernikeTelescope(Telescope):
-
-    def __init__(self, optic):
-        super().__init__(optic)
-
-    def update(self, deltax):
-        if not isinstance(deltax, ZernikeState):
-            deltax = ZernikeState(deltax)
-        camx, camy, camz, camrx, camry = deltax.camhex
-        self.optic = self.optic.withGloballyShiftedOptic('LSST.LSSTCamera', [camx, camy, camz])
-        # note: rotations only commute for small angles; otherwise order matters.
-        camrot = np.dot(batoid.RotX(camrx), batoid.RotY(camry))
-        self.optic = self.optic.withLocallyRotatedOptic('LSST.LSSTCamera', camrot)
-
-        m2x, m2y, m2z, m2rx, m2ry = deltax.m2hex
-        self.optic = self.optic.withGloballyShiftedOptic('LSST.M2', [m2x, m2y, m2z])
-        # note: rotations only commute for small angles; otherwise order matters.
-        m2rot = np.dot(batoid.RotX(m2rx), batoid.RotY(m2ry))
-        self.optic = self.optic.withLocallyRotatedOptic('LSST.M2', m2rot)
-
-        m2surf = self.optic.itemDict['LSST.M2']
-        m2residual = batoid.Zernike(deltax.m2z, R_outer=m2surf.outRadius, R_inner=m2surf.inRadius)
-
-        if isinstance(m2surf, batoid.Sum):
-            m2nominal = m2surf.surfaces[0]
-        else:
-            m2nominal = m2surf.surface
-        self.optic.itemDict['LSST.M2'].surface = batoid.Sum([m2nominal, m2residual])
-
-    @staticmethod
-    def nominal(band='g'):
+    @classmethod
+    def nominal(cls, band='g'):
         """
         Provides the nominal LSST telescope.
 
@@ -89,21 +59,83 @@ class ZernikeTelescope(Telescope):
         LSST_g_fn = os.path.join(batoid.datadir, "LSST", "LSST_{}.yaml".format(band))
         config = yaml.safe_load(open(LSST_g_fn))
         optic = batoid.parse.parse_optic(config['opticalSystem'])
-        return ZernikeTelescope(optic)
+        return cls(optic)
+
+    def update(self, deltax):
+        """
+        Updates the optic.
+
+        Parameters
+        ----------
+        deltax: aos.state.State
+            The change in the optical state.
+
+        Notes
+        -----
+        Rotations only commute for small angles; otherwise order matters.
+        """
+        camx, camy, camz, camrx, camry = deltax.camhex
+        self.optic = self.optic.withGloballyShiftedOptic('LSST.LSSTCamera', [camx, camy, camz])
+        camrot = np.dot(batoid.RotX(camrx), batoid.RotY(camry))
+        self.optic = self.optic.withLocallyRotatedOptic('LSST.LSSTCamera', camrot)
+
+        m2x, m2y, m2z, m2rx, m2ry = deltax.m2hex
+        self.optic = self.optic.withGloballyShiftedOptic('LSST.M2', [m2x, m2y, m2z])
+        m2rot = np.dot(batoid.RotX(m2rx), batoid.RotY(m2ry))
+        self.optic = self.optic.withLocallyRotatedOptic('LSST.M2', m2rot)
+
+
+class ZernikeTelescope(Telescope):
+    """
+    Class that wraps batoid optic, accumulates changes to the zernike state, and handles updates.
+
+    Parameters
+    ----------
+    optic: batoid.optic.CompoundOptic
+        The optical system.
+
+    Attributes
+    ----------
+    optic: batoid.optic.CompoundOptic
+        The optical system.
+    """
+
+    def __init__(self, optic):
+        super().__init__(optic)
+
+    def update(self, deltax):
+        """
+        Update the telescope based on the provided update to the optical state.
+
+        Parameters
+        ----------
+        deltax: aos.state.ZernikeState
+            The change in the optical state to apply to the telescope.
+        """
+        super().update(deltax)
+
+        m2surf = self.optic.itemDict['LSST.M2']
+        m2residual = batoid.Zernike(deltax.m2z, R_outer=m2surf.outRadius, R_inner=m2surf.inRadius)
+
+        if isinstance(m2surf, batoid.Sum):
+            m2nominal = m2surf.surfaces[0]
+        else:
+            m2nominal = m2surf.surface
+        self.optic.itemDict['LSST.M2'].surface = batoid.Sum([m2nominal, m2residual])
 
 
 class BendingTelescope(Telescope):
     """
-    Class that wraps batoid optic, accumulates changes to the state, and handles updates.
+    Class that wraps batoid optic, accumulates changes to the bending state, and handles updates.
 
     Parameters
     ----------
     optic: batoid.optic.CompoundOptic
         The optical system.
     m1m3Residual: aos.mirror.M1M3Residual
-        The M1M3 residual surface.
+        The M1M3 residual surface; defaults to M1M3Residual with 5 modes.
     m2Residual: aos.mirror.M2Residual
-        The M2 residual surface.
+        The M2 residual surface; defaults to M2Residual with 5 modes.
 
     Attributes
     ----------
@@ -115,7 +147,9 @@ class BendingTelescope(Telescope):
         The M2 residual surface.
     """
 
-    def __init__(self, optic, m1m3Residual, m2Residual):
+    def __init__(self, optic,
+                 m1m3Residual=M1M3Residual(nModes=5),
+                 m2Residual=M2Residual(nModes=5)):
         super().__init__(optic)
         self.m1m3res = m1m3Residual
         self.m2res = m2Residual
@@ -126,22 +160,10 @@ class BendingTelescope(Telescope):
 
         Parameters
         ----------
-        deltax: aos.state.BendingState | numpy.ndarray
+        deltax: aos.state.BendingState
             The change in the optical state to apply to the telescope.
         """
-        if not isinstance(deltax, BendingState):
-            deltax = BendingState(deltax)
-        camx, camy, camz, camrx, camry = deltax.camhex
-        self.optic = self.optic.withGloballyShiftedOptic('LSST.LSSTCamera', [camx, camy, camz])
-        # note: rotations only commute for small angles; otherwise order matters.
-        camrot = np.dot(batoid.RotX(camrx), batoid.RotY(camry))
-        self.optic = self.optic.withLocallyRotatedOptic('LSST.LSSTCamera', camrot)
-
-        m2x, m2y, m2z, m2rx, m2ry = deltax.m2hex
-        self.optic = self.optic.withGloballyShiftedOptic('LSST.M2', [m2x, m2y, m2z])
-        # note: rotations only commute for small angles; otherwise order matters.
-        m2rot = np.dot(batoid.RotX(m2rx), batoid.RotY(m2ry))
-        self.optic = self.optic.withLocallyRotatedOptic('LSST.M2', m2rot)
+        super().update(deltax)
 
         self.m1m3res.applyBending(deltax.m1m3modes)
         self.m2res.applyBending(deltax.m2modes)
@@ -168,27 +190,3 @@ class BendingTelescope(Telescope):
         else:
             m2nominal = m2surf.surface
         self.optic.itemDict['LSST.M2'].surface = batoid.Sum([m2nominal, m2bicubic])
-
-    @staticmethod
-    def nominal(band='g', nModes=5):
-        """
-        Provides the nominal LSST telescope.
-
-        Parameters
-        ----------
-        band: str
-            The LSST filter; default is 'g'.
-        nModes: int
-            Number of mirror bending modes; default is 5.
-
-        Returns
-        -------
-        BendingTelescope
-            The nominal LSST telescope.
-        """
-        LSST_g_fn = os.path.join(batoid.datadir, "LSST", "LSST_{}.yaml".format(band))
-        config = yaml.safe_load(open(LSST_g_fn))
-        optic = batoid.parse.parse_optic(config['opticalSystem'])
-        m1m3res = M1M3Residual(nModes=nModes)
-        m2res = M2Residual(nModes=nModes)
-        return BendingTelescope(optic, m1m3res, m2res)

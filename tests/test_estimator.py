@@ -1,28 +1,35 @@
 import numpy as np
-import galsim
-import batoid
-from aos.estimator import OPDEstimator, InversionEstimator, ForwardModelEstimator
+from aos.estimator import WavefrontEstimator, InversionEstimator, ForwardModelEstimator
+from aos.simulator import WavefrontSimulator
+from aos.telescope import ZernikeTelescope
 
 
-def test_opd_estimator():
-    nZern = 10
-    z = np.zeros(nZern+1)
-    z[5] = 1
-    obscuration = 0.61
-    zern = galsim.zernike.Zernike(z, R_inner=obscuration)
-    nx = 256
-    X,Y = np.meshgrid(np.linspace(-1, 1, nx),
-                      np.linspace(-1, 1, nx))
-    R = np.sqrt(X ** 2 + Y ** 2)
-    mask = np.logical_and(R < 1, R > obscuration)
-    Z = zern.evalCartesian(X, Y)
-    array = np.ma.masked_array(Z, mask)
-    opd = batoid.Lattice(array, np.eye(2))
+def test_wavefront_estimator_roundtrip():
+    est = WavefrontEstimator()
+    nZern = 22
+    for i in range(1, nZern):
+        coefs = np.zeros(nZern + 1)
+        coefs[i] = 1
+        img = est.evaluate(coefs)
+        zest = est.estimate(img)
+        np.testing.assert_allclose(zest, coefs, atol=1e-6)
 
-    estimator = OPDEstimator(obscuration=obscuration, nZern=10)
-    zest = estimator.estimate(opd)
 
-    np.testing.assert_allclose(zest, z[1:], atol=1e-6)
+def test_estimator_against_simulator():
+    sim = WavefrontSimulator()
+    est = WavefrontEstimator()
+    zt = ZernikeTelescope.nominal()
+    fx, fy = (1.28, 1.28)
+    simImg = sim.simulateWavefront(zt.optic, fx, fy)
+    zest = est.estimate(simImg, nZern=40)
+    estImg = est.evaluate(zest)
+
+    comb = np.abs(simImg-estImg)
+    mask = ~np.isnan(comb)
+    diff = np.sum(comb[mask])
+    avgErr = diff / np.sum(mask)
+
+    assert avgErr < 5e-9
 
 
 def test_inversion_estimator():

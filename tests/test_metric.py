@@ -1,8 +1,11 @@
 import numpy as np
 from aos.metric import SumOfSquares
+from aos.state import BendingState
 
 
 def test_sum_of_squares():
-    x = np.arange(5)
+    arr = np.arange(BendingState.LENGTH)
+    x = BendingState(arr)
     tm = SumOfSquares()
-    assert tm.evaluate(x) == 30
+    ref = np.sum(np.arange(BendingState.LENGTH) ** 2)
+    assert tm.evaluate(x) == ref

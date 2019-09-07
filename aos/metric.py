@@ -1,5 +1,6 @@
 import numpy as np
 from abc import ABC, abstractmethod
+from aos.state import State
 
 
 class Metric(ABC):
@@ -14,7 +15,7 @@ class Metric(ABC):
 
         Parameters
         ----------
-        x : numpy.ndarray
+        x : aos.state.State | numpy.ndarray[float]
             Optical state.
         """
         pass
@@ -31,7 +32,7 @@ class SumOfSquares(Metric):
 
         Parameters
         ----------
-        x : numpy.ndarray
+        x : aos.state.State | numpy.ndarray[float]
             Optical state.
 
         Returns
@@ -39,4 +40,6 @@ class SumOfSquares(Metric):
         float
             Sum of squares.
         """
+        if isinstance(x, State):
+            x = x.array
         return np.sum(x ** 2)
