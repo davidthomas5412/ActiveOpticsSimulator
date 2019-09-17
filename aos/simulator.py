@@ -163,8 +163,8 @@ class DonutSimulator:
         xcent, ycent = np.mean(rays.x), np.mean(rays.y)
         width = self.crop * self.pix
 
-        xedges = np.arange(xcent - width / 2, xcent + width / 2, self.pix)
-        yedges = np.arange(ycent - width / 2, ycent + width / 2, self.pix)
+        xedges = np.linspace(xcent - width / 2, xcent + width / 2, self.crop + 1)
+        yedges = np.linspace(ycent - width / 2, ycent + width / 2, self.crop + 1)
 
         # flip here because 1st dimension corresponds to y-dimension in bitmap image
         result, _, _ = np.histogram2d(rays.y, rays.x, bins=[yedges, xedges])

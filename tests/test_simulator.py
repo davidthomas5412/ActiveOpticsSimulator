@@ -27,6 +27,7 @@ def test_wavefront_simulator():
     ref = np.load(os.path.join(aos.testDir, 'nominal_wavefront_0_0.npy'))
 
     np.testing.assert_allclose(wavefront, ref)
+    np.testing.assert_array_equal(wavefront.shape, [255, 255])
 
 
 def test_even_wavefront_raises():
@@ -62,6 +63,7 @@ def test_donut_simulator():
     poisson_err = np.sum(np.sqrt(ref))
 
     assert err < 2 * poisson_err
+    np.testing.assert_array_equal(array.shape, [192, 192])
 
 
 def test_odd_crop_raises():
