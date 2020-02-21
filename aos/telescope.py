@@ -113,15 +113,29 @@ class ZernikeTelescope(Telescope):
             The change in the optical state to apply to the telescope.
         """
         super().update(deltax)
+        self.__updateSurface('LSST.M1', deltax.m1zer)
+        self.__updateSurface('LSST.M2', deltax.m2zer)
+        self.__updateSurface('LSST.M3', deltax.m3zer)
 
-        m2surf = self.optic.itemDict['LSST.M2']
-        m2residual = batoid.Zernike(deltax.m2z, R_outer=m2surf.outRadius, R_inner=m2surf.inRadius)
+    def __updateSurface(self, name, zernikes):
+        """
+        Add zernike residual to mirror surface.
 
-        if isinstance(m2surf, batoid.Sum):
-            m2nominal = m2surf.surfaces[0]
+        Parameters
+        ----------
+        name: str
+            The name of the mirror to update (ex. 'LSST_M1').
+        zernikes: numpy.ndarray
+            1D array with the zernike coefficients for the surface residual.
+        """
+        surf = self.optic.itemDict[name]
+        residual = batoid.Zernike(zernikes, R_outer=surf.outRadius, R_inner=surf.inRadius)
+
+        if isinstance(surf, batoid.Sum):
+            nominal = surf.surfaces[0]
         else:
-            m2nominal = m2surf.surface
-        self.optic.itemDict['LSST.M2'].surface = batoid.Sum([m2nominal, m2residual])
+            nominal = surf.surface
+        self.optic.itemDict[name].surface = batoid.Sum([nominal, residual])
 
 
 class BendingTelescope(Telescope):

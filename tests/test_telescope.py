@@ -77,12 +77,12 @@ def test_bending_mode_update():
 
 def test_zernike_update():
     state = ZernikeState()
-    state['m2z11'] = 100e-9
+    state['m2zer11'] = 100e-9
     tel = ZernikeTelescope.nominal()
     tel.update(state)
 
     pert = tel.optic.itemDict['LSST.M2'].surface.surfaces[1]
 
-    assert pert.coef[11] == state['m2z11']
+    assert pert.coef[11] == state['m2zer11']
     assert pert.R_inner == tel.optic.itemDict['LSST.M2'].inRadius
     assert pert.R_outer == tel.optic.itemDict['LSST.M2'].outRadius

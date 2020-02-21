@@ -111,22 +111,42 @@ class ZernikeState(State):
     Parameters
     ----------
     array: numpy.ndarray
-        A 1D array with the 32 degrees of freedom.
+        A 1D array with the 46 degrees of freedom.
 
     Attributes
     ----------
-    m2z: numpy.ndarray
-        1D array with the 18 M2 zernike coefficients (Z4-Z21).
+    m1zer: numpy.ndarray
+        1D array with the 12 M1 zernike coefficients (Z4-Z15).
+    m2zer: numpy.ndarray
+        1D array with the 12 M2 zernike coefficients (Z4-Z15).
+    m3zer: numpy.ndarray
+        1D array with the 12 M3 zernike coefficients (Z4-Z15).
     """
-    LENGTH = 32
+    LENGTH = 46
 
     def __init__(self, array=None):
         if array is None:
             array = np.zeros(ZernikeState.LENGTH)
         super().__init__(array)
-        for i in range(22):
-            self.stateMap['m2z{}'.format(i)] = i + 10
+        for i in range(12):
+            self.stateMap['m1zer{}'.format(i+4)] = i + 10
+            self.stateMap['m2zer{}'.format(i+4)] = i + 22
+            self.stateMap['m3zer{}'.format(i+4)] = i + 34
 
     @property
-    def m2z(self):
-        return self.array[10:]
+    def m1zer(self):
+        out = np.zeros(16)
+        out[4:16] = self.array[10:22]
+        return out
+
+    @property
+    def m2zer(self):
+        out = np.zeros(16)
+        out[4:16] = self.array[22:34]
+        return out
+    
+    @property
+    def m3zer(self):
+        out = np.zeros(16)
+        out[4:16] = self.array[34:46]
+        return out
