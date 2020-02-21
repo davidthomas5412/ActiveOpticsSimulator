@@ -1,7 +1,6 @@
 import batoid
 import numpy as np
-from batoid.utils import fieldToDirCos
-
+from batoid.analysis import wavefront
 
 class WavefrontSimulator:
     """
@@ -40,10 +39,6 @@ class WavefrontSimulator:
 
     def simulateWavefront(self, optic, fieldx, fieldy):
         """
-        Notes
-        -----
-        Thank you Josh Meyers for providing this snippet.
-
         Parameters
         ----------
         optic: batoid.optic.CompoundOptic
@@ -59,34 +54,14 @@ class WavefrontSimulator:
             The grid of relative path difference values.
         """
         thetax, thetay = np.deg2rad([fieldx, fieldy])
-        dirCos = fieldToDirCos(thetax, thetay, projection='zemax')
-        rays = batoid.rayGrid(
-            optic.dist / dirCos[2], optic.pupilSize,
-            dirCos[0], dirCos[1], -dirCos[2],
-            self.nx, self.wavelength, 1.0, optic.inMedium,
-            lattice=False
+        lattice = wavefront(
+            optic, thetax, thetay, wavelength=self.wavelength,
+            nx=self.nx, reference='chief'
         )
-
-        # chief ray index.  works if lattice=True and nx is even,
-        # or if lattice=False and nx is odd
-        cridx = (self.nx // 2) * self.nx + self.nx // 2
-        optic.traceInPlace(rays, outCoordSys=batoid.globalCoordSys)
-        spherePoint = rays[cridx].r
-
-        # We want to place the vertex of the reference sphere one radius length away from the
-        # intersection point.  So transform our rays into that coordinate system.
-        radius = np.hypot(optic.sphereRadius, np.hypot(spherePoint[0], spherePoint[1]))
-        transform = batoid.CoordTransform(
-            batoid.globalCoordSys, batoid.CoordSys(spherePoint + np.array([0, 0, radius])))
-        transform.applyForwardInPlace(rays)
-
-        sphere = batoid.Sphere(-radius)
-        sphere.intersectInPlace(rays)
-        t0 = rays[cridx].t
-        wf = t0 - rays.t
-        wf[rays.vignetted] = np.nan
-        wf = wf.reshape(self.nx, self.nx)
-        return wf
+        marray = lattice.array
+        out = marray.data * self.wavelength
+        out[marray.mask] = np.nan
+        return out
 
 
 class DonutSimulator:
@@ -151,10 +126,10 @@ class DonutSimulator:
         flux = 1
         xcos, ycos, zcos = batoid.utils.gnomonicToDirCos(thetax, thetay)
         rays = batoid.uniformCircularGrid(
-            optic.dist,
+            optic.backDist,
             optic.pupilSize / 2,
             optic.pupilSize * optic.pupilObscuration / 2,
-            xcos, ycos, -zcos,
+            xcos, ycos, zcos,
             self.nphot, self.wavelength, flux,
             optic.inMedium)
         optic.traceInPlace(rays)

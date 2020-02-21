@@ -14,12 +14,14 @@ def test_wavefront_simulator():
     from aos.telescope import BendingTelescope
     from aos.simulator import WavefrontSimulator
 
+    np.random.seed(0)
     tel = BendingTelescope.nominal()
     sim = WavefrontSimulator()
     fieldx, fieldy = (0, 0)
     wavefront = sim.simulateWavefront(tel.optic, fieldx, fieldy)
     ref = np.save(os.path.join(aos.testDir, 'nominal_wavefront_0_0.npy'), wavefront)
     """
+    np.random.seed(0)
     tel = BendingTelescope.nominal()
     sim = WavefrontSimulator()
     fieldx, fieldy = (0, 0)
