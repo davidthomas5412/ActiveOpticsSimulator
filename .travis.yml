@@ -17,6 +17,8 @@ before_install:
   - cd ..
   - git clone --recurse-submodules https://github.com/jmeyers314/batoid.git
   - cd batoid
+  - git pull origin releases/0.1:releases/0.1
+  - git checkout releases/0.1
   - python setup.py install
   - cd ../ActiveOpticsSimulator
   - pip install -r requirements.txt
