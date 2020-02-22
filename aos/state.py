@@ -128,25 +128,18 @@ class ZernikeState(State):
         if array is None:
             array = np.zeros(ZernikeState.LENGTH)
         super().__init__(array)
-        for i in range(12):
-            self.stateMap['m1zer{}'.format(i+4)] = i + 10
-            self.stateMap['m2zer{}'.format(i+4)] = i + 22
-            self.stateMap['m3zer{}'.format(i+4)] = i + 34
+        for i in range(18):
+            self.stateMap['m1m3zer{}'.format(i+4)] = i + 10
+            self.stateMap['m2zer{}'.format(i+4)] = i + 28
 
     @property
-    def m1zer(self):
-        out = np.zeros(16)
-        out[4:16] = self.array[10:22]
+    def m1m3zer(self):
+        out = np.zeros(22)
+        out[4:] = self.array[10:28]
         return out
 
     @property
     def m2zer(self):
-        out = np.zeros(16)
-        out[4:16] = self.array[22:34]
-        return out
-    
-    @property
-    def m3zer(self):
-        out = np.zeros(16)
-        out[4:16] = self.array[34:46]
+        out = np.zeros(22)
+        out[4:] = self.array[28:46]
         return out

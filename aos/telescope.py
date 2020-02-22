@@ -113,29 +113,33 @@ class ZernikeTelescope(Telescope):
             The change in the optical state to apply to the telescope.
         """
         super().update(deltax)
-        self.__updateSurface('LSST.M1', deltax.m1zer)
-        self.__updateSurface('LSST.M2', deltax.m2zer)
-        self.__updateSurface('LSST.M3', deltax.m3zer)
+        m2surf = self.optic.itemDict['LSST.M2']
+        m2residual = batoid.Zernike(deltax.m2zer, R_outer=m2surf.outRadius, R_inner=m2surf.inRadius)
 
-    def __updateSurface(self, name, zernikes):
-        """
-        Add zernike residual to mirror surface.
-
-        Parameters
-        ----------
-        name: str
-            The name of the mirror to update (ex. 'LSST_M1').
-        zernikes: numpy.ndarray
-            1D array with the zernike coefficients for the surface residual.
-        """
-        surf = self.optic.itemDict[name]
-        residual = batoid.Zernike(zernikes, R_outer=surf.outRadius, R_inner=surf.inRadius)
-
-        if isinstance(surf, batoid.Sum):
-            nominal = surf.surfaces[0]
+        if isinstance(m2surf, batoid.Sum):
+            m2nominal = m2surf.surfaces[0]
         else:
-            nominal = surf.surface
-        self.optic.itemDict[name].surface = batoid.Sum([nominal, residual])
+            m2nominal = m2surf.surface
+        self.optic.itemDict['LSST.M2'].surface = batoid.Sum([m2nominal, m2residual])
+
+        m1surf = self.optic.itemDict['LSST.M1']
+        m3surf = self.optic.itemDict['LSST.M3']
+        
+        # spread across all M1M3
+        m1m3residual = batoid.Zernike(deltax.m1m3zer, R_outer=m1surf.outRadius, R_inner=m3surf.inRadius)
+
+        if isinstance(m1surf, batoid.Sum):
+            m1nominal = m1surf.surfaces[0]
+        else:
+            m1nominal = m1surf.surface
+    
+        if isinstance(m3surf, batoid.Sum):
+            m3nominal = m3surf.surfaces[0]
+        else:
+            m3nominal = m3surf.surface
+
+        self.optic.itemDict['LSST.M1'].surface = batoid.Sum([m1nominal, m1m3residual])
+        self.optic.itemDict['LSST.M3'].surface = batoid.Sum([m3nominal, m1m3residual])
 
 
 class BendingTelescope(Telescope):

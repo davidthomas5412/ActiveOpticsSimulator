@@ -19,13 +19,11 @@ def test_zernike_state_dictionary():
 
     assert state['m2rx'] == arr[8]
 
-    state['m1zer4'] = 1e-6
+    state['m1m3zer4'] = 1e-6
     state['m2zer6'] = 2e-6
-    state['m3zer15'] = 3e-6
 
-    assert state.array[10] == state['m1zer4']
-    assert state.array[24] == state['m2zer6']
-    assert state.array[45] == state['m3zer15']
+    assert state.array[10] == state['m1m3zer4']
+    assert state.array[30] == state['m2zer6']
 
 
 
@@ -43,13 +41,12 @@ def test_zernike_state_properties():
     arr = np.arange(ZernikeState.LENGTH)
     state = ZernikeState(arr)
 
-    def zer(z4to16):
-        z = np.zeros(16)
-        z[4:] = z4to16
+    def zer(z4to22):
+        z = np.zeros(22)
+        z[4:] = z4to22
         return z
 
     np.testing.assert_allclose(state.camhex, arr[:5])
     np.testing.assert_allclose(state.m2hex, arr[5:10])
-    np.testing.assert_allclose(state.m1zer, zer(arr[10:22]))
-    np.testing.assert_allclose(state.m2zer, zer(arr[22:34]))
-    np.testing.assert_allclose(state.m3zer, zer(arr[34:46]))
+    np.testing.assert_allclose(state.m1m3zer, zer(arr[10:28]))
+    np.testing.assert_allclose(state.m2zer, zer(arr[28:46]))
