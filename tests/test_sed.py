@@ -1,16 +1,16 @@
 import numpy as np
-from aos.sed import Blackbody, Monochromatic, Transmission
+from aos.sed import Blackbody, Monochromatic, Bandpass
 
-def test_transmission_static_methods():
-    trans = Transmission.u()
-    Transmission.g()
-    Transmission.r()
-    Transmission.i()
-    Transmission.z()
-    Transmission.y()
+def test_bandpass_static_methods():
+    bp = Bandpass.u()
+    Bandpass.g()
+    Bandpass.r()
+    Bandpass.i()
+    Bandpass.z()
+    Bandpass.y()
 
-    assert np.all(trans.wavelengths <= trans.high)
-    assert np.all(trans.wavelengths >= trans.low)
+    assert np.all(bp.wavelengths <= bp.high)
+    assert np.all(bp.wavelengths >= bp.low)
 
 def test_monochromatic():
     mon = Monochromatic()
